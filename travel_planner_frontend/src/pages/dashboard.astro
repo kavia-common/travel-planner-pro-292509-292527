@@ -1,0 +1,149 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import TripCard from '../components/TripCard.astro';
+import Button from '../components/ui/Button.astro';
+import Input from '../components/ui/Input.astro';
+import { getTrips, createTrip } from '../lib/api';
+
+const trips = await getTrips();
+
+// Handle form submission for new trip
+if (Astro.request.method === 'POST') {
+  try {
+    const data = await Astro.request.formData();
+    const title = data.get('title') as string;
+    const destination = data.get('destination') as string;
+    const startDate = data.get('startDate') as string;
+    const endDate = data.get('endDate') as string;
+    
+    await createTrip({ title, destination, startDate, endDate });
+    return Astro.redirect('/dashboard');
+  } catch (error) {
+    console.error(error);
+  }
+}
+---
+
+<DashboardLayout title="My Trips">
+  <div class="dashboard-header">
+    <div class="welcome-text">
+        <h2>Your Adventures</h2>
+        <p class="text-muted">Manage your upcoming and past trips.</p>
+    </div>
+    <Button variant="primary" id="create-trip-btn">
+        <svg style="width: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        New Trip
+    </Button>
+  </div>
+
+  <!-- Create Trip Modal (Simplified as inline form for now, hidden by default) -->
+  <div id="create-trip-form" class="create-form hidden">
+      <div class="form-card">
+          <h3>Plan a New Trip</h3>
+          <form method="POST">
+              <div class="form-grid">
+                  <Input id="title" label="Trip Title" placeholder="e.g. Summer Vacation" required />
+                  <Input id="destination" label="Destination" placeholder="e.g. Rome, Italy" required />
+                  <Input id="startDate" label="Start Date" type="date" required />
+                  <Input id="endDate" label="End Date" type="date" required />
+              </div>
+              <div class="form-actions">
+                  <Button type="button" variant="ghost" id="cancel-create">Cancel</Button>
+                  <Button type="submit" variant="primary">Create Trip</Button>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <div class="trips-grid">
+    {trips.map(trip => (
+      <TripCard trip={trip} />
+    ))}
+  </div>
+  
+  {trips.length === 0 && (
+      <div class="empty-state">
+          <p>You haven't planned any trips yet.</p>
+          <Button variant="secondary" onclick="document.getElementById('create-trip-form').classList.remove('hidden')">Start Planning</Button>
+      </div>
+  )}
+</DashboardLayout>
+
+<style>
+  .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+  }
+  
+  .trips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+  }
+  
+  .create-form {
+      margin-bottom: 2rem;
+      animation: slideDown 0.3s ease-out;
+  }
+  
+  .create-form.hidden {
+      display: none;
+  }
+  
+  .form-card {
+      background: var(--color-surface);
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-md);
+  }
+  
+  .form-card h3 {
+      margin-bottom: 1rem;
+      color: var(--color-primary);
+  }
+  
+  .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+  }
+  
+  @media (min-width: 640px) {
+      .form-grid {
+          grid-template-columns: 1fr 1fr;
+      }
+  }
+  
+  .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+  }
+  
+  @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<script>
+    const createBtn = document.getElementById('create-trip-btn');
+    const cancelBtn = document.getElementById('cancel-create');
+    const form = document.getElementById('create-trip-form');
+    
+    if (createBtn && form) {
+        createBtn.addEventListener('click', () => {
+            form.classList.remove('hidden');
+        });
+    }
+    
+    if (cancelBtn && form) {
+        cancelBtn.addEventListener('click', () => {
+            form.classList.add('hidden');
+        });
+    }
+</script>

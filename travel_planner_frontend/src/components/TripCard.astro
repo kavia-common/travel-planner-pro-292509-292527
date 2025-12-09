@@ -1,0 +1,100 @@
+---
+import type { Trip } from '../types/travel';
+
+interface Props {
+  trip: Trip;
+}
+
+const { trip } = Astro.props;
+
+const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+---
+
+<a href={`/trips/${trip.id}`} class="trip-card">
+  <div class="image-container">
+    <img src={trip.image} alt={trip.title} loading="lazy" />
+    <div class="overlay"></div>
+  </div>
+  <div class="content">
+    <h3 class="title">{trip.title}</h3>
+    <p class="destination">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        {trip.destination}
+    </p>
+    <div class="dates">
+      <span>{formatDate(trip.startDate)}</span>
+      <span class="separator">-</span>
+      <span>{formatDate(trip.endDate)}</span>
+    </div>
+  </div>
+</a>
+
+<style>
+  .trip-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--color-border);
+    height: 100%;
+  }
+
+  .trip-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .image-container {
+    position: relative;
+    height: 160px;
+    background-color: var(--color-background);
+  }
+
+  .image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .content {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+  }
+
+  .title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-main);
+  }
+  
+  .destination {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin: 0;
+  }
+  
+  .destination svg {
+      width: 14px;
+      height: 14px;
+      color: var(--color-primary);
+  }
+  
+  .dates {
+      margin-top: auto;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      display: flex;
+      gap: 0.25rem;
+      padding-top: 0.5rem;
+  }
+</style>
